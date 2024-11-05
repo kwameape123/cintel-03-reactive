@@ -80,7 +80,7 @@ with ui.layout_columns():
         ui.card_header("Data Grid for Palmer Penguins")
         @render.data_frame
         def grid():
-           return render.DataGrid(data=penguins_df)
+           return render.DataGrid(data=filtered_data())
 
 # Render plotly and seaborn histogram within the same layout column.
             
@@ -89,13 +89,13 @@ with ui.layout_columns():
         ui.card_header("Distribution of Penguins bill length")
         @render_plotly
         def plot1():
-            return px.histogram(penguins_df, x="bill_length_mm",nbins=input.plotly_bin_count())
+            return px.histogram(filtered_data(), x="bill_length_mm",nbins=input.plotly_bin_count())
             
      with ui.card(full_screen=True):
         ui.card_header("Distribution of Penguins body mass")
         @render.plot
         def plot2():
-            return sns.histplot(data=penguins_df, x="body_mass_g")
+            return sns.histplot(data=filtered_data(), x="body_mass_g")
 
 # Render plotly and seaborn scatterplot within the same layout column.
             
@@ -104,11 +104,24 @@ with ui.layout_columns(height="1000px"):
         ui.card_header("Relationship between bill length and body mass(Plotly)")
         @render_plotly
         def plot3():
-         return px.scatter(data_frame=penguins_df,x="bill_length_mm", y="body_mass_g",color="species",hover_name="island",symbol="sex")
+         return px.scatter(data_frame=filtered_data(),x="bill_length_mm", y="body_mass_g",color="species",hover_name="island",symbol="sex")
 
      with ui.card(full_screen=True):
         ui.card_header("Relationship between bill length and body mass(Seaborn)")
         @render.plot
         def plot4():
-         return sns.scatterplot(data=penguins_df,x="bill_length_mm", y="body_mass_g",hue="species")
+         return sns.scatterplot(data=filtered_data(),x="bill_length_mm", y="body_mass_g",hue="species")
+
+# --------------------------------------------------------
+# Reactive calculations and effects
+# --------------------------------------------------------
+
+# Add a reactive calculation to filter the data
+# By decorating the function with @reactive, we can use the function to filter the data
+# The function will be called whenever an input functions used to generate that output changes.
+# Any output that depends on the reactive function (e.g., filtered_data()) will be updated when the data changes.
+
+@reactive.calc
+def filtered_data():
+    return penguins_df
        
