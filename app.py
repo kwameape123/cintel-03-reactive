@@ -31,6 +31,12 @@ from shinywidgets import render_plotly
 # Use the built-in function to load the Palmer Penguins dataset
 penguins_df = palmerpenguins.load_penguins()
 
+# Function to handle NaN Errors
+# This function with get rid of rows in a dataframe with NaN values in any column
+def clean_dataframe(df):
+    # Drop rows where any column contains NaN
+    return df.dropna()
+
 ###########################
 #Define and Design our user interface.
 ############################
@@ -56,6 +62,7 @@ with ui.sidebar(open="open"):
     ui.input_numeric("plotly_bin_count","Number of Plotly Bins",value=6)
     ui.input_slider("seaborn_bin_count","Number of Seaborn Bins",value=6,min=4,max=20)
     ui.input_checkbox_group("selected_species_list","Select Species",["Adelie", "Gentoo", "Chinstrap"],selected=["Adelie"],inline=True)
+    ui.input_checkbox_group("selected_island_list","Select Island",["Biscoe","Dream","Torgersen"])
     ui.hr()
     ui.a("GitHub",href="https://github.com/kwameape123/cintel-02-data",target="_blank")
 
@@ -116,12 +123,14 @@ with ui.layout_columns(height="1000px"):
 # Reactive calculations and effects
 # --------------------------------------------------------
 
-# Add a reactive calculation to filter the data
+# Add a reactive calculation to filter the data with respect to species and island
 # By decorating the function with @reactive, we can use the function to filter the data
 # The function will be called whenever an input functions used to generate that output changes.
-# Any output that depends on the reactive function (e.g., filtered_data()) will be updated when the data changes.
+# Any output that depends on the reactive function (filtered_data()) will be updated when the data changes.
 
 @reactive.calc
 def filtered_data():
-    return penguins_df
-       
+    Speciesmatch=penguins_df["species"].isin(input.selected_species_list())
+    Islandmatch= penguins_df["island"].isin(input.selected_island_list())
+    filtered_data=penguins_df[Speciesmatch & Islandmatch]
+    return clean_dataframe(filtered_data)
